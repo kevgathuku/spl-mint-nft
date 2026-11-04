@@ -3,7 +3,7 @@ import { solanaDevnetRpc } from "@solana/kit-plugin-rpc";
 import { signerFromFile } from "@solana/kit-plugin-signer";
 import { tokenProgram } from "@solana-program/token";
 
-// Path to payer keypair file
+// Path to wallet keypair file
 const walletPath = "./devnet-wallet.json";
 
 (async () => {
