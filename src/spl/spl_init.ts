@@ -1,97 +1,43 @@
-import {
-  appendTransactionMessageInstruction,
-  appendTransactionMessageInstructions,
-  assertIsTransactionWithBlockhashLifetime,
-  createKeyPairSignerFromBytes,
-  createSignerFromKeyPair,
-  createSolanaRpc,
-  createSolanaRpcSubscriptions,
-  createTransactionMessage,
-  generateKeyPairSigner,
-  getSignatureFromTransaction,
-  sendAndConfirmTransactionFactory,
-  setTransactionMessageFeePayerSigner,
-  setTransactionMessageLifetimeUsingBlockhash,
-  signTransactionMessageWithSigners,
-} from "@solana/kit";
-import { getCreateAccountInstruction } from "@solana-program/system";
-import {
-  getCreateMintInstructionPlan,
-  getInitializeMintInstruction,
-  getMintSize,
-  TOKEN_PROGRAM_ADDRESS,
-} from "@solana-program/token";
+import { createClient, generateKeyPairSigner } from "@solana/kit";
+import { solanaDevnetRpc } from "@solana/kit-plugin-rpc";
+import { signerFromFile } from "@solana/kit-plugin-signer";
+import { tokenProgram } from "@solana-program/token";
 
-//import your wallet
-import wallet from "../../devnet-wallet.json";
-
-const rpc = createSolanaRpc("https://api.devnet.solana.com");
-
-const rpcSubscriptions = createSolanaRpcSubscriptions(
-  "wss://api.devnet.solana.com",
-);
+// Path to payer keypair file
+const walletPath = "./devnet-wallet.json";
 
 (async () => {
   try {
-    // Create signer from wallet
-    const signer = await createKeyPairSignerFromBytes(new Uint8Array(wallet));
+    // Build client:
+    // 1. wallet as payer/identity
+    // 2. devnet RPC (v1)
+    // 3. token program
+    const client = await createClient()
+      .use(signerFromFile(walletPath))
+      .use(
+        solanaDevnetRpc({
+          transactionConfig: {
+            version: 1,
+          },
+        }),
+      )
+      .use(tokenProgram());
 
-    // Generate a new mint signed for address
+    // Generate new keypair for the mint account
     const mint = await generateKeyPairSigner();
 
-    // Get the size of the mint
-    const space = BigInt(getMintSize());
+    // Create account + initialize mint
+    // then send and confirm
+    const { context } = await client.token.instructions
+      .createMint({
+        newMint: mint,
+        decimals: 6,
+        mintAuthority: client.payer.address,
+      })
+      .sendTransaction();
 
-    // Get the min balance for rent exemption
-    const rent = await rpc.getMinimumBalanceForRentExemption(space).send();
-
-    const sendAndConfirm = sendAndConfirmTransactionFactory({
-      rpc,
-      rpcSubscriptions,
-    });
-
-    const { value: latestBlockHash } = await rpc.getLatestBlockhash().send();
-
-    const msg = createTransactionMessage({ version: 0 });
-
-    const msgWithPayer = setTransactionMessageFeePayerSigner(signer, msg);
-
-    const msgWithLifetime = setTransactionMessageLifetimeUsingBlockhash(
-      latestBlockHash,
-      msgWithPayer,
-    );
-
-    const txMessage = appendTransactionMessageInstructions(
-      [
-        getCreateAccountInstruction({
-          payer: signer,
-          newAccount: mint,
-          lamports: rent,
-          space,
-          programAddress: TOKEN_PROGRAM_ADDRESS,
-        }),
-
-        getInitializeMintInstruction({
-          mint: mint.address,
-          decimals: 6,
-          mintAuthority: signer.address,
-        }),
-      ],
-      msgWithLifetime,
-    );
-
-    const signedTx = await signTransactionMessageWithSigners(txMessage);
-
-    const signature = getSignatureFromTransaction(signedTx);
-
-    assertIsTransactionWithBlockhashLifetime(signedTx);
-
-    // Send and confirm the transaction
-    await sendAndConfirm(signedTx, { commitment: "confirmed" });
     console.log(`mint address: ${mint.address}`);
-    console.log(`transaction signature: ${signature}`);
-
-    // Send and confirm the transaction
+    console.log(`transaction signature: ${context.signature}`);
   } catch (error) {
     console.log(error);
   }
