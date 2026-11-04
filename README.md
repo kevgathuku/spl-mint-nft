@@ -5,6 +5,8 @@
 3. Attaches Metaplex metadata to the mint
 4. Transfers tokens to another wallet
 
+See [flow/spl-journey.md](./flow/spl-journey.md) for a full run with actual devnet addresses and signatures.
+
 ## Setup
 
 Requirements: Node.js, npm, a funded devnet wallet.
