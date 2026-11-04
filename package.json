@@ -4,11 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "check": "tsc --noEmit",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "biome lint .",
     "lint:fix": "biome lint --write .",
     "format": "biome check --write .",
-    "spl:init": "npx ts-node src/spl/spl_init.ts"
+    "spl:init": "npx ts-node src/spl/spl_init.ts",
+    "spl:mint": "npx ts-node src/spl/spl_mint.ts"
   },
   "keywords": [],
   "author": "",
