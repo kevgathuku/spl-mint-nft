@@ -4,8 +4,9 @@
 2. Mints tokens to your wallet-owned ATA
 3. Attaches Metaplex metadata to the mint
 4. Transfers tokens to another wallet
+5. Mints an NFT using MPL Core
 
-See [flow/spl-journey.md](./flow/spl-journey.md) for a full run with actual devnet addresses and signatures.
+See [flow/spl-journey.md](./flow/spl-journey.md) for a full SPL run and [flow/nft-journey.md](./flow/nft-journey.md) for the NFT run, with actual devnet addresses and signatures.
 
 ## Setup
 
@@ -37,6 +38,9 @@ npm run spl:init      # create mint on devnet
 npm run spl:mint      # mint tokens to your ATA
 npm run spl:metadata  # attach metadata to the mint
 npm run spl:transfer  # transfer tokens to another wallet
+npm run nft:image    # upload image to Irys
+npm run nft:metadata  # upload NFT JSON metadata to Irys
+npm run nft:mint      # mint Core NFT asset on devnet
 npm run check    # tsc --noEmit typecheck
 ```
 
@@ -99,6 +103,44 @@ transfer txid: <SIG>
 ```
 
 Sends 1 token (decimals 6) ATA-to-ATA. Source ATA must already hold funds — run step 2 for the same mint first.
+
+5. Mint an NFT using MPL Core (UMI + Irys):
+
+```bash
+npm run nft:image
+```
+
+Output:
+
+```
+Your image URI: <IMAGE_URI>
+```
+
+Paste `<IMAGE_URI>` into `src/nft/nft_metadata.ts`, then:
+
+```bash
+npm run nft:metadata
+```
+
+Output:
+
+```
+metadata uri: <METADATA_URI>
+```
+
+Paste `<METADATA_URI>` into `src/nft/nft_mint.ts` (`metadataUri`), then:
+
+```bash
+npm run nft:mint
+```
+
+Output:
+
+```
+signature <SIG> , asset : <ASSET>
+```
+
+Creates a Core asset owned by your wallet. Needs funded devnet wallet for Irys storage + tx fees.
 
 Verify:
 
