@@ -11,7 +11,8 @@
     "format": "biome check --write .",
     "spl:init": "npx ts-node src/spl/spl_init.ts",
     "spl:mint": "npx ts-node src/spl/spl_mint.ts",
-    "spl:metadata": "npx ts-node src/spl/spl_metadata.ts"
+    "spl:metadata": "npx ts-node src/spl/spl_metadata.ts",
+    "spl:transfer": "npx ts-node src/spl/spl_transfer.ts"
   },
   "keywords": [],
   "author": "",
